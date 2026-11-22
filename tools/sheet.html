@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><body style="margin:0;background:#3a3448;font:12px monospace;color:#fff">
+<canvas id="c"></canvas>
+<script src="../js/util.js"></script><script src="../js/data.js"></script><script src="../js/art.js"></script>
+<script>
+// sprite sheet preview: ?id=itsube&s=5
+const q = new URLSearchParams(location.search), ids = (q.get('id') || Object.keys(Art.SPECS).join(',')).split(','), S = +q.get('s') || 4;
+const c = document.getElementById('c'), x = c.getContext('2d');
+const poses = Art.POSES.concat(['ko']);
+let rowH = 0, colW = 0; for (const id of ids) { const f = Art.frame(id, 'idle0'); rowH = Math.max(rowH, f.height * S + 24); colW = Math.max(colW, Art.SPECS[id].w * S + 30); }
+c.width = poses.length * colW + 10; c.height = ids.length * rowH + 10; x.imageSmoothingEnabled = false;
+ids.forEach((id, r) => poses.forEach((p, i) => {
+  const f = p === 'ko' ? Art.frame(id, 'hit') : Art.frame(id, p), X = 10 + i * colW, Y = 10 + r * rowH;
+  x.fillStyle = '#4a4258'; x.fillRect(X - 2, Y - 2, colW - 6, rowH - 6);
+  if (p === 'ko') { x.save(); x.translate(X + colW / 2, Y + rowH - 30); x.rotate(-Math.PI / 2); x.drawImage(f, -f.width * S / 2, -f.height * S / 2, f.width * S, f.height * S); x.restore(); }
+  else x.drawImage(f, X, Y + rowH - 24 - f.height * S, f.width * S, f.height * S);
+  x.fillStyle = '#fff'; x.fillText(id + ' ' + p, X, Y + rowH - 10);
+}));
+</script></body></html>

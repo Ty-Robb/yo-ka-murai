@@ -13,12 +13,143 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
 <style>
-html,body{margin:0;height:100%;background:#120c18;color:#f3e6d0;font-family:monospace;display:flex;align-items:center;justify-content:center;text-align:center}
-h1{font-size:9vmin;letter-spacing:.1em;color:#e8483b;text-shadow:4px 4px 0 #000;margin:0}
-p{opacity:.8}
+:root{--sat:env(safe-area-inset-top,0px);--sar:env(safe-area-inset-right,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--gold:#c9a23a;--ink:#120c18;--paper:#f3e6d0;--blue:#2f6fd6;--red:#d63a2f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:"Courier New",ui-monospace,monospace;touch-action:none;overscroll-behavior:none}
+#game{position:fixed;inset:0;display:block;touch-action:none}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:calc(10px + var(--sat)) calc(12px + var(--sar)) calc(10px + var(--sab)) calc(12px + var(--sal));z-index:5}
+.screen.on{display:flex}
+h1.logo{margin:0;font-size:min(13vw,17vh);letter-spacing:.06em;color:#e8483b;text-shadow:0 .06em 0 #000,.05em .1em 0 #5a0c10;line-height:1;font-weight:900}
+.logo span{color:var(--paper)}
+.tag{margin:.6em 0 1.4em;color:var(--gold);letter-spacing:.3em;font-size:min(3.4vw,4.2vh);text-shadow:0 2px 0 #000}
+.btn{font:inherit;font-weight:900;letter-spacing:.12em;color:var(--paper);background:linear-gradient(#3a2430,#22141c);border:3px solid var(--gold);border-radius:6px;padding:.7em 1.6em;font-size:min(4vw,5vh);cursor:pointer;box-shadow:0 5px 0 #000;margin:.35em;text-shadow:0 2px 0 #000}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #000}
+.btn.big{font-size:min(6vw,8vh);padding:.5em 2.2em;background:linear-gradient(#c0392b,#7a1d1d)}
+.btn.small{font-size:min(2.8vw,3.8vh);padding:.45em 1em}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn.sel{background:linear-gradient(#e0b040,#9a6a10);color:#1a1008}
+.panel{background:rgba(12,8,16,.86);border:2px solid var(--gold);border-radius:8px;padding:14px 18px;text-align:center;max-width:94vw}
+.title-s{font-weight:900;letter-spacing:.15em;color:var(--gold);font-size:min(3.6vw,5vh);margin:0 0 .4em;text-shadow:0 2px 0 #000}
+.row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;align-items:center}
+#select{justify-content:flex-start}
+.selhead{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;gap:8px}
+.cols{display:flex;gap:10px;width:100%;max-width:1100px;flex:1;min-height:0;margin-top:6px}
+.fac{flex:1;display:flex;flex-direction:column;min-height:0;border-radius:8px;padding:6px;border:2px solid}
+.fac.warrior{border-color:var(--blue);background:rgba(20,40,90,.35)}.fac.yokai{border-color:var(--red);background:rgba(90,20,20,.35)}
+.fac h3{margin:0 0 6px;text-align:center;letter-spacing:.2em;font-size:min(2.8vw,3.6vh)}
+.fac.warrior h3{color:#8fb6ff}.fac.yokai h3{color:#ff9a8f}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(30vw,190px),1fr));gap:6px;overflow-y:auto;min-height:0;padding-bottom:4px;touch-action:pan-y}
+.card{position:relative;display:flex;gap:6px;background:linear-gradient(#2a1e2e,#18101c);border:2px solid #4a3a50;border-radius:6px;padding:5px;cursor:pointer;min-height:84px}
+.card.on{border-color:#ffd23f;box-shadow:0 0 0 2px #ffd23f inset}
+.card.locked{opacity:.35;pointer-events:none}
+.card canvas.pt{width:min(13vh,62px);height:min(13vh,62px);image-rendering:pixelated;background:radial-gradient(#4a3a58,#1a1220);border-radius:4px;flex:none}
+.card .info{display:flex;flex-direction:column;min-width:0;font-size:min(1.9vw,2.6vh);line-height:1.2}
+.card .nm{font-weight:900;font-size:1.25em;color:#fff;letter-spacing:.04em}
+.card .meta{color:#cbb;opacity:.9}
+.card .blurb{color:#e9dcc6;opacity:.85;margin-top:2px}
+.card .abil{display:flex;gap:4px;margin-top:3px}
+.card .abil canvas{width:18px;height:18px;image-rendering:pixelated;background:#0c0810;border:1px solid #555;border-radius:3px}
+.tier{position:absolute;top:4px;right:4px;font-weight:900;color:#000;border-radius:4px;padding:1px 6px;font-size:min(2.2vw,3vh);box-shadow:0 2px 0 #000}
+.diff .btn{font-size:min(2.6vw,3.6vh);padding:.4em .9em;margin:.15em}
+#roulette .reel{font-size:min(8vw,12vh);font-weight:900;letter-spacing:.1em;color:#fff;text-shadow:0 4px 0 #000;margin:.2em 0;min-height:1.2em}
+#roulette .sub{color:var(--gold);letter-spacing:.2em}
+#pausebtn{position:fixed;top:calc(var(--sat) + 4px);left:50%;transform:translateX(30px);z-index:4;display:none;font:900 14px monospace;color:var(--paper);background:rgba(0,0,0,.5);border:2px solid var(--gold);border-radius:6px;width:34px;height:30px;cursor:pointer}
+#results .stats{display:grid;grid-template-columns:auto auto auto;gap:4px 18px;font-size:min(2.8vw,3.8vh);margin:.6em 0}
+#results .stats div:nth-child(3n+1){text-align:left;color:var(--gold)}
+#winpose{width:min(28vh,140px);height:min(28vh,140px);image-rendering:pixelated}
+#rotate{position:fixed;inset:0;z-index:50;background:var(--ink);display:none;align-items:center;justify-content:center;text-align:center;font-size:20px;padding:20px}
+@media (orientation:portrait) and (pointer:coarse){#rotate{display:flex}}
+#toast{position:fixed;left:50%;bottom:calc(16px + var(--sab));transform:translateX(-50%);background:rgba(0,0,0,.85);border:2px solid var(--gold);padding:8px 14px;border-radius:6px;z-index:40;display:none;font-weight:900}
+.hint{opacity:.7;font-size:min(2.4vw,3.2vh);margin-top:.6em}
+input.code{font:900 min(8vw,10vh) monospace;letter-spacing:.3em;text-align:center;width:5.2em;background:#0c0810;color:#fff;border:3px solid var(--gold);border-radius:6px;text-transform:uppercase;user-select:text;-webkit-user-select:text}
+.codebig{font:900 min(12vw,16vh) monospace;letter-spacing:.25em;color:#ffd23f;text-shadow:0 4px 0 #000}
+#mute{position:fixed;right:calc(8px + var(--sar));top:calc(8px + var(--sat));z-index:6;font:900 14px monospace;background:rgba(0,0,0,.5);color:var(--paper);border:2px solid #666;border-radius:6px;padding:4px 8px;cursor:pointer}
 </style>
 </head>
 <body>
-<div><h1>YO-KA-MURAI</h1><p>Samurai vs Yokai. The duelling grounds are being built...</p></div>
+<canvas id="game"></canvas>
+
+<div id="title" class="screen on">
+  <h1 class="logo">YO-KA-<span>MURAI</span></h1>
+  <div class="tag">SAMURAI &nbsp;VS&nbsp; YOKAI</div>
+  <button class="btn big" id="play">PLAY</button>
+  <div class="hint">Best with headphones. Turn your device sideways.</div>
+</div>
+
+<div id="mode" class="screen">
+  <div class="panel col">
+    <div class="title-s">CHOOSE YOUR DUEL</div>
+    <button class="btn" id="m-ai">DUEL VS AI</button>
+    <button class="btn" id="m-create">CREATE LOBBY</button>
+    <button class="btn" id="m-join">JOIN LOBBY</button>
+    <button class="btn small" id="m-back">BACK</button>
+  </div>
+</div>
+
+<div id="select" class="screen">
+  <div class="selhead">
+    <button class="btn small" id="s-back">BACK</button>
+    <div class="title-s" id="s-title">CHOOSE YOUR FIGHTER</div>
+    <button class="btn small" id="s-go">READY</button>
+  </div>
+  <div class="row diff" id="s-diff" style="display:none">
+    <span style="color:var(--gold);font-weight:900">BOT:</span>
+    <button class="btn" data-d="easy">EASY</button><button class="btn sel" data-d="normal">NORMAL</button><button class="btn" data-d="hard">HARD</button>
+    <button class="btn" id="s-random">RANDOM FIGHTER</button>
+  </div>
+  <div class="hint" id="s-status" style="margin:2px"></div>
+  <div class="cols">
+    <div class="fac warrior"><h3>WARRIORS</h3><div class="cards" id="c-warrior"></div></div>
+    <div class="fac yokai"><h3>YOKAI</h3><div class="cards" id="c-yokai"></div></div>
+  </div>
+</div>
+
+<div id="lobby" class="screen">
+  <div class="panel col" id="lobby-panel"></div>
+</div>
+
+<div id="roulette" class="screen">
+  <div class="sub">ARENA ROULETTE</div>
+  <div class="reel" id="reel">DOJO</div>
+  <div class="sub" id="reelsub"></div>
+</div>
+
+<div id="pause" class="screen">
+  <div class="panel col">
+    <div class="title-s">PAUSED</div>
+    <button class="btn" id="p-resume">RESUME</button>
+    <button class="btn" id="p-quit">QUIT TO MENU</button>
+    <button class="btn small" id="p-mute">SOUND: ON</button>
+    <div class="hint">Move: WASD / left thumb &nbsp; M1: J K &nbsp; Special: L</div>
+  </div>
+</div>
+
+<div id="results" class="screen">
+  <div class="panel col">
+    <div class="title-s" id="r-title">VICTORY</div>
+    <canvas id="winpose" width="140" height="140"></canvas>
+    <div id="r-name" style="font-weight:900;font-size:min(4vw,5vh)"></div>
+    <div class="stats" id="r-stats"></div>
+    <div class="row"><button class="btn" id="r-rematch">REMATCH</button><button class="btn" id="r-menu">MENU</button></div>
+    <div class="hint" id="r-wait"></div>
+  </div>
+</div>
+
+<button id="pausebtn">II</button>
+<button id="mute">SOUND</button>
+<div id="rotate"><div><div style="font-size:48px">&#x21bb;</div>Turn your device sideways to duel.</div></div>
+<div id="toast"></div>
+
+<script src="js/util.js"></script>
+<script src="js/data.js"></script>
+<script src="js/art.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

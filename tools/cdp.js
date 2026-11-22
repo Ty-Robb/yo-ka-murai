@@ -1,6 +1,6 @@
 // minimal headless-Edge driver over the Chrome DevTools Protocol (Node 22+ has WebSocket built in)
 const { spawn } = require('child_process'), fs = require('fs'), path = require('path'), os = require('os');
-fs.mkdirSync(path.join(process.cwd(), 'shots'), { recursive: true });
+fs.mkdirSync(path.join(__dirname, 'shots'), { recursive: true });
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function launch(port) {
