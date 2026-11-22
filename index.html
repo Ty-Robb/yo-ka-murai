@@ -33,13 +33,13 @@ h1.logo{margin:0;font-size:min(13vw,17vh);letter-spacing:.06em;color:#e8483b;tex
 .row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
 .col{display:flex;flex-direction:column;align-items:center}
 #select{justify-content:flex-start}
-.selhead{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;gap:8px}
+.selhead{padding-right:70px;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;gap:8px}
 .cols{display:flex;gap:10px;width:100%;max-width:1100px;flex:1;min-height:0;margin-top:6px}
 .fac{flex:1;display:flex;flex-direction:column;min-height:0;border-radius:8px;padding:6px;border:2px solid}
 .fac.warrior{border-color:var(--blue);background:rgba(20,40,90,.35)}.fac.yokai{border-color:var(--red);background:rgba(90,20,20,.35)}
 .fac h3{margin:0 0 6px;text-align:center;letter-spacing:.2em;font-size:min(2.8vw,3.6vh)}
 .fac.warrior h3{color:#8fb6ff}.fac.yokai h3{color:#ff9a8f}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(30vw,190px),1fr));gap:6px;overflow-y:auto;min-height:0;padding-bottom:4px;touch-action:pan-y}
+.cards{display:grid;grid-template-columns:1fr;gap:6px;overflow-y:auto;min-height:0;padding-bottom:4px;touch-action:pan-y;grid-auto-rows:max-content}
 .card{position:relative;display:flex;gap:6px;background:linear-gradient(#2a1e2e,#18101c);border:2px solid #4a3a50;border-radius:6px;padding:5px;cursor:pointer;min-height:84px}
 .card.on{border-color:#ffd23f;box-shadow:0 0 0 2px #ffd23f inset}
 .card.locked{opacity:.35;pointer-events:none}
@@ -48,7 +48,7 @@ h1.logo{margin:0;font-size:min(13vw,17vh);letter-spacing:.06em;color:#e8483b;tex
 .card .nm{font-weight:900;font-size:1.25em;color:#fff;letter-spacing:.04em}
 .card .meta{color:#cbb;opacity:.9}
 .card .blurb{color:#e9dcc6;opacity:.85;margin-top:2px}
-.card .abil{display:flex;gap:4px;margin-top:3px}
+.card .abil{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .card .abil canvas{width:18px;height:18px;image-rendering:pixelated;background:#0c0810;border:1px solid #555;border-radius:3px}
 .tier{position:absolute;top:4px;right:4px;font-weight:900;color:#000;border-radius:4px;padding:1px 6px;font-size:min(2.2vw,3vh);box-shadow:0 2px 0 #000}
 .diff .btn{font-size:min(2.6vw,3.6vh);padding:.4em .9em;margin:.15em}
@@ -155,7 +155,9 @@ input.code{font:900 min(8vw,10vh) monospace;letter-spacing:.3em;text-align:cente
 <script src="js/render.js"></script>
 <script src="js/arena-render.js"></script>
 <script src="js/ui.js"></script>
+<script src="assets/vendor/peerjs.min.js"></script>
 <script src="js/main.js"></script>
+<script src="js/online.js"></script>
 </body>
 </html>
 

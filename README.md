@@ -1,31 +1,51 @@
 # YO-KA-MURAI
 
-Samurai vs yokai. A mobile-first, top-down, real-time 1v1 pixel arena brawler set in feudal Japan.
+A mobile-first pixel arena brawler: four warriors versus five yokai.
 
 **Play:** https://ty-robb.github.io/yo-ka-murai/
 
-On iPad or phone: open the link in Safari/Chrome, then **Share → Add to Home Screen** to play it fullscreen like an app.
+![Arena duel](assets/screenshot.png)
+
+On iPad or phone, open the play link and choose **Share ? Add to Home Screen**.
 
 ## Controls
-| | Touch | Keyboard |
+
+| Action | Touch | Keyboard |
 |---|---|---|
-| Move / face | Left thumb (floating joystick) | WASD or arrows |
-| M1-A | Right button 1 | J |
-| M1-B | Right button 2 | K |
-| SPECIAL | Big right button | L or Space |
-| Pause | II button | Esc |
+| Move and face | Floating left joystick | WASD / arrows |
+| Primary / secondary attack | Right buttons | J / K |
+| Special | Large right button | L / Space |
+| Pause | II | Escape |
 
-Holding an M1 button repeats it. Attacks snap toward an enemy within 30° of where you face.
+Hold basic attacks to repeat. Hold and release Suzume's special to charge, Gashadokuro's to aim the rising hand, and Orochi's to steer underground.
 
-## Modes
-- **Duel vs AI:** best of 3 rounds against a bot (Easy / Normal / Hard).
-- **Online duel:** coming soon.
+## Play
 
-## Roster
-- **Itsube** (Warrior, Human, Tier B): a wandering samurai with a katana. Jab, Slash, and Guard (a perfect-parry window).
+Duel vs AI supports Easy, Normal and Hard, a chosen or random opponent, best of three rounds and four randomly selected arenas.
 
-More fighters and arenas are being added.
+For online duels, **Create Lobby** and share the four-letter code. Your opponent chooses **Join Lobby**. Choose fighters and both press **Ready**. Both players must request a rematch. Online matches keep running while the pause menu is open.
 
-## Tech
-Plain HTML5 canvas + JavaScript, no build step. All fighter stats live in `js/data.js`. Pixel art is drawn in code in `js/art.js`.
-Local testing: `node tools/serve.js 8795`, then open http://localhost:8795/.
+Online uses PeerJS/WebRTC and the public PeerJS signaling server. Internet access is required. Some restrictive networks prevent direct peer connections; try a different network if a connection times out.
+
+## Fighters
+
+Warriors: Itsube (katana), Hayate (kusarigama), Suzume (yumi), Okuma (war scythe).
+
+Yokai: Kodama, Kappa, Akaoni, Gashadokuro and Yamata no Orochi.
+
+All nine fighters are unlocked. Arenas: Dojo, Mountain, Shogun's Palace and Bamboo Field. Breakable cover and craters persist between rounds. Mountain cliff ring-outs cost 25% max HP; the palace pond slows fighters except Kappa; bridges cross the pond; bamboo blocks sight until cut.
+
+## Development
+
+Plain HTML5 canvas and JavaScript, no build step. Fighter stats are in js/data.js, special handlers in js/abilities.js, and arena definitions in js/arenas.js. Online is host authoritative; guests send inputs and receive render snapshots.
+
+Run with Node 22 or newer:
+
+    node tools/serve.js 8795
+    node tools/verify-sim.js
+    node tools/verify-render.js
+    node tools/verify-online.js
+
+The render and online checks use installed Microsoft Edge headlessly and the local server. Online checks require access to PeerJS's public server.
+
+PeerJS 1.5.5 is vendored under the MIT license; see assets/vendor/peerjs-LICENSE.

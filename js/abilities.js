@@ -5,7 +5,7 @@
   for(const t of H.targetsOf(st,f.team)) if(Math.hypot(t.x-x,t.y-y)<r+t.r)
    H.applyHit(st,f,t,{dmg,kb,dir:Math.atan2(t.y-y,t.x-x),m1:false,...extra});
   for(const o of st.objs) if(o.alive&&Math.hypot(o.x-x,o.y-y)<r+o.r) H.damageObj(st,o,4,f.face,f);
-  H.fx(st,'bighit',x,y,{size:r});H.ev(st,{type:'shake',amt:10});
+  H.fx(st,'bighit',x,y,{size:r,dir:0});H.ev(st,{type:'shake',amt:10});
  }
  Sim.SPECIALS.hook={start(st,f){
   const dir=H.aimAssist(st,f,330);f.face=dir;

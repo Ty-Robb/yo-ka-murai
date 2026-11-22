@@ -23,6 +23,7 @@ const Input = {};
   Input.attach = function (el) {
     el.addEventListener('pointerdown', e => {
       if (!st.enabled) return;
+      if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
       if (e.pointerType === 'touch') st.touchSeen = true;
       const k = btnAt(e.clientX, e.clientY);
       if (k) { st.btn[k] = e.pointerId; e.preventDefault(); Input.onPress && Input.onPress(k); return; }

@@ -16,7 +16,7 @@
    A.limb(P,cx+8,armY,cx+18+(strike?8:0),armY+(strike?-8:5),5,2,body);
    if(id==='hayate'){
     P.rect(cx-10,head-4,20,13,'#303341');P.rect(cx,head-2,9,3,'#e9dba7');
-    P.rect(cx-11,head+9,22,4,'#b43139');P.poly;
+    P.rect(cx-11,head+9,22,4,'#b43139');
     A.limb(P,cx-8,head+12,cx-24,head+17+run,4,2,'#b43139');
     P.line(cx+18,armY,cx+21,armY-17,'#a5b4bf');P.line(cx+21,armY-17,cx+31,armY-19,'#dce6d8');
     for(let i=0;i<8;i++)P.rect(cx+12+i*2,armY+5+Math.sin(i)*3,2,1,'#9095a1');

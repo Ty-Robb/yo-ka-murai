@@ -240,7 +240,7 @@ const Art = {};
   // portrait for cards and HUD: idle0 frame scaled into a box
   Art.portrait = function (id, size, pose) {
     const f = Art.frame(id, pose || 'idle0'); const [c, x] = mk(size, size);
-    const s = Math.max(1, Math.floor(Math.min(size / f.width, size / f.height) * 0.95));
+    const s = Math.min(size / f.width, size / f.height) * 0.95;
     x.drawImage(f, Math.round((size - f.width * s) / 2), Math.round(size - f.height * s), f.width * s, f.height * s); return c;
   };
 

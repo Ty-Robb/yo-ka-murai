@@ -1,0 +1,10 @@
+const {launch,newTab,sleep}=require('./cdp');
+(async()=>{const b=await launch(9453);try{const t=await newTab(b,'http://localhost:8795/',844,390,2);await sleep(1500);
+console.log(await t.eval(`(()=>{document.getElementById('play').click();document.getElementById('m-ai').click();document.querySelector('[data-id="itsube"]').click();document.getElementById('s-go').click();document.querySelector('[data-id="akaoni"]').click();document.getElementById('s-go').click();return Game.pick;})()`));
+await sleep(6500);
+console.log(await t.eval(`(()=>{const s=Game.st;if(!s)throw Error('Match did not start');s.phase='fight';s.fighters[0].x=350;s.fighters[1].x=395;s.fighters[0].face=0;return s.fighters.map(f=>f.hp);})()`));
+await t.key('KeyJ','j');console.log('input',await t.eval("Input.read()"));
+await t.eval("Game.bot={};const think=AI.think;AI.think=()=>({mx:0,my:0,a:false,b:false,s:false});for(let k=0;k<15;k++)Sim.step(Game.st,[Input.read(),AI.think()]);AI.think=think;");await t.key('KeyJ','j','keyUp');console.log('keyboard damage',await t.eval("Game.st.fighters[1].hp"));
+await t.eval("Game.pause(true)");console.log('pause',await t.eval("UI.cur"));await t.eval("Game.pause(false)");
+console.log(t.logs.filter(x=>/EXCEPTION/.test(x)));t.close();
+}finally{b.kill();}process.exit(0);})().catch(e=>{console.error(e);process.exit(1)});

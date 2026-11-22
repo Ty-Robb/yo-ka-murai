@@ -20,7 +20,7 @@ const Game = {};
   UI.click('m-back', () => UI.show('title'));
   UI.click('m-ai', () => openSelect('ai'));
   G.openSelect = openSelect;
-  if (typeof Online === 'undefined') { $('m-create').disabled = true; $('m-join').disabled = true; }
+
 
   function goFullscreen() {
     const d = document.documentElement;
@@ -28,9 +28,11 @@ const Game = {};
   }
 
   function openSelect(kind) {
+    $('s-go').textContent = kind === 'ai' ? 'CONTINUE' : 'READY'; $('s-go').disabled = false;
     G.pick.kind = kind; G.pick.step = 'me'; G.pick.me = null; G.pick.bot = null;
     $('s-diff').style.display = 'none'; $('s-title').textContent = 'CHOOSE YOUR FIGHTER'; $('s-status').textContent = '';
     UI.buildCards(id => {
+      if (G.pick.kind !== 'ai' && $('s-go').disabled) return;
       if (G.pick.step === 'me') G.pick.me = id; else G.pick.bot = id;
       UI.markCard(id);
       if (G.pick.kind !== 'ai' && G.onLobbyPick) G.onLobbyPick(id);
