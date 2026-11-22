@@ -1,0 +1,9 @@
+// tiny static server for local testing: node tools/serve.js [port]
+const http = require('http'), fs = require('fs'), path = require('path');
+const root = path.join(__dirname, '..'), port = +process.argv[2] || 8792;
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.json': 'application/json', '.md': 'text/plain' };
+http.createServer((req, res) => {
+  let p = decodeURIComponent(req.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html';
+  const f = path.join(root, p); if (!f.startsWith(root)) { res.writeHead(403); return res.end(); }
+  fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); return res.end('not found'); } res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(req.method === 'HEAD' ? undefined : d); });
+}).listen(port, () => console.log('serving on http://localhost:' + port));
