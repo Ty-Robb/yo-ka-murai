@@ -12,7 +12,7 @@ const Sim = {};
     // opts: {fighters:[{id, ctrl}], arena}
     const st = {
       t: 0, round: 0, wins: [0, 0], phase: 'intro', phaseT: 0, timer: WORLD.ROUND_TIME,
-      fighters: [], decoys: [], projs: [], objs: [], zones: [], decals: [], events: [], freeze: 0, slowmo: 0,
+      fighters: [], decoys: [], projs: [], objs: [], zones: [], decals: [], events: [], marks: [], pending: [], freeze: 0, slowmo: 0,
       clash: null, lastClash: -99, arenaId: opts.arena, arena: ARENAS[opts.arena], nextId: 1, winner: -1, roundWinner: -1,
     };
     const built = st.arena.build();
@@ -48,7 +48,7 @@ const Sim = {};
 
   function startRound(st) {
     st.round++; st.phase = 'intro'; st.phaseT = 0; st.timer = WORLD.ROUND_TIME; st.clash = null; st.roundWinner = -1;
-    st.projs.length = 0; st.decoys.length = 0;
+    st.projs.length = 0; st.decoys.length = 0; st.marks.length = 0; st.pending.length = 0;
     st.zones = st.zones.filter(z => z.kind !== 'trail');
     for (const f of st.fighters) resetFighter(f);
     ev(st, { type: 'banner', text: 'ROUND ' + st.round, color: '#f3e6d0', big: true });
@@ -85,9 +85,10 @@ const Sim = {};
     updateDecoys(st, dt);
     updateProjs(st, dt);
     for (const z of st.zones) z.t -= dt;
+    for (const m of st.marks) m.t -= dt; st.marks = st.marks.filter(m => m.t > 0);
     st.zones = st.zones.filter(z => z.t > 0);
     separate(st);
-    if (st.pending) { for (const p of st.pending) p.t -= dt; const due = st.pending.filter(p => p.t <= 0); st.pending = st.pending.filter(p => p.t > 0); for (const p of due) p.fn(); }
+    if (st.pending.length && st.phase === 'fight') { for (const p of st.pending) p.t -= dt; const due = st.pending.filter(p => p.t <= 0); st.pending = st.pending.filter(p => p.t > 0); for (const p of due) p.fn(); }
 
     if (st.phase === 'fight') {
       const dead = st.fighters.filter(f => f.hp <= 0);
@@ -158,8 +159,11 @@ const Sim = {};
     let m = f.slowMul;
     if (f.act) m *= f.act.def.moveMul !== undefined ? f.act.def.moveMul : 0.35;
     if (f.spec && f.spec.moveMul !== undefined) m *= f.spec.moveMul;
+    const onBridge = st.zones.some(z => z.kind === 'bridge' && Math.abs(f.x - z.x) < z.w / 2 && Math.abs(f.y - z.y) < z.h / 2);
     for (const z of st.zones) {
-      if (Math.hypot(f.x - z.x, f.y - z.y) > z.r + f.r * 0.3) continue;
+      if (z.kind === 'bridge') continue;
+      if (z.rx) { const ex = (f.x - z.x) / z.rx, ey = (f.y - z.y) / z.ry; if (ex * ex + ey * ey > 1 || onBridge) continue; }
+      else if (Math.hypot(f.x - z.x, f.y - z.y) > z.r + f.r * 0.3) continue;
       if (z.kind === 'pond') m *= f.id === 'kappa' ? 1.15 : 0.6;
       if (z.kind === 'trail') m *= z.owner === f.i ? 1.5 : 0.7;
     }
@@ -280,7 +284,7 @@ const Sim = {};
     if (a.t >= w && !a.began) {
       a.began = true;
       sfx(st, d.sfx || (d.kind === 'proj' ? 'throw' : 'swing'), f.x, f.y, f.sz.idx >= 3 ? 1 : 0.7);
-      fx(st, d.fx || 'slash', f.x, f.y, { dir: a.dir, range: d.range, arc: d.arc, width: d.width, shape: d.shape, who: f.i, size: f.r, color: d.color });
+      if (d.kind !== 'proj' || d.fx) fx(st, d.fx || 'slash', f.x, f.y, { dir: a.dir, range: d.range, arc: d.arc, width: d.width, shape: d.shape, who: f.i, size: f.r, color: d.color });
     }
     if (a.t >= w && a.t < w + act + dt) {
       if (d.lunge) { f.x += Math.cos(a.dir) * d.lunge * dt; f.y += Math.sin(a.dir) * d.lunge * dt; }
@@ -317,6 +321,7 @@ const Sim = {};
         startClash(st, f, t); return;
       }
       applyHit(st, f, t, { dmg: d.dmg, kb: d.kb, dir: d.shape === 'line' ? a.dir : Math.atan2(t.y - f.y, t.x - f.x), m1: a.slot !== 's', stun: d.stun, slow: d.slow, knockup: d.knockup, pull: d.pull, hitstun: d.hitstun, heavy: d.heavy, throwIt: d.throwIt, dirAtt: a.dir });
+      if (d.onHit) d.onHit(st, f, t);
     }
     for (const o of st.objs) {
       if (!o.alive || a.objHit.has(o)) continue;
@@ -351,8 +356,9 @@ const Sim = {};
     }
     if (o.stun) { t.stun = Math.max(t.stun, o.stun * (t.sz.idx >= 4 ? 0.5 : 1)); if (t.spec && !t.spec.armour) endSpecial(st, t, true); t.act = null; }
     if (o.slow) { t.slow = Math.max(t.slow, o.slow.t); t.slowMul = Math.min(t.slowMul, o.slow.mul); }
+    if (o.throwIt && !armour) { const a = o.dirAtt !== undefined ? o.dirAtt : o.dir, p = 460 * Math.sqrt(t.sz.kb); t.vx = Math.cos(a) * p; t.vy = Math.sin(a) * p; t.vz = 420; t.z = Math.max(t.z, 1); t.act = null; if (t.spec && t.spec.breakable) endSpecial(st, t, true); }
     if (o.knockup && !armour) { t.vz = 300 + 260 * o.knockup; t.z = Math.max(t.z, 1); if (t.spec && t.spec.breakable) endSpecial(st, t, true); t.act = null; }
-    const heavy = o.heavy || dmg >= 10 || !o.m1;
+    const heavy = !o.light && (o.heavy || dmg >= 10 || !o.m1);
     st.freeze = Math.max(st.freeze, heavy ? 0.07 : 0.025);
     fx(st, heavy ? 'bighit' : 'hit', t.x, t.y - t.r * 0.6, { dir: o.dir, size: t.r, blood: false });
     sfx(st, heavy ? 'hitHeavy' : 'hit', t.x, t.y);
@@ -366,9 +372,9 @@ const Sim = {};
   Sim.applyHit = applyHit;
 
   function parry(st, t, att, o) {
-    t.guardHit = true; t.stats.parries++;
+    t.guardHit = true;
     const key = att ? att.i + ':' + (att.act ? att.act.start : st.t.toFixed(2)) : 'x';
-    if (t.lastParryKey === key) return; t.lastParryKey = key;
+    if (t.lastParryKey === key) return; t.lastParryKey = key; t.stats.parries++;
     if (att) {
       att.stun = Math.max(att.stun, att.sz.idx >= 4 ? 0.4 : 0.8); att.act = null;
       if (att.spec) endSpecial(st, att, true);
@@ -518,3 +524,10 @@ const Sim = {};
     },
   };
 })();
+Sim.SPECIALS.scatter = {
+ start(st,f) {
+ f.hidden=2.5;
+ for(let k=0;k<4;k++) st.decoys.push({id:'kodama',owner:f.i,team:f.team,decoy:true,alive:true,x:f.x,y:f.y,r:f.r,face:k*Math.PI/2,speed:f.speed,t:2.5,anim:0,turn:0.5,moving:true,z:0,hitFlash:0});
+ Sim.helpers.fx(st,'poof',f.x,f.y,{});
+ }
+};

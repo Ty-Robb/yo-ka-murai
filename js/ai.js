@@ -120,3 +120,4 @@ const AI = {};
     },
   };
 })();
+AI.SPECIAL.scatter=function(b,st,me,T,c){if(me.cd.s<=0 && c.dist<180 && (me.hitFlash>0 || c.enemyReal.act)) c.out.s=true;};
